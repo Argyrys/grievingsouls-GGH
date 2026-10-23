@@ -21,6 +21,10 @@ class ThreatVerdict(BaseModel):
     reasoning: str = Field(
         description="1-2 sentence cognitive cross-reference explanation"
     )
+    tier: Literal["lexical", "multimodal"] = Field(
+        default="multimodal",
+        description="Engine that produced the verdict: lexical fast-tier or Gemini multimodal",
+    )
     recommended_action: Literal["block", "warn", "allow"] = Field(
         description="Deterministic action to take"
     )

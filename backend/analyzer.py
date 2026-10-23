@@ -8,6 +8,7 @@ from google import genai
 from google.genai import types as genai_types
 from playwright.async_api import async_playwright
 
+from . import lexical
 from .models import ThreatVerdict
 
 load_dotenv(os.path.join(os.path.dirname(__file__), "..", ".env"))
@@ -155,8 +156,16 @@ async def analyze_screenshot(screenshot: bytes, url: str) -> ThreatVerdict:
 
 
 async def analyze_url(url: str) -> tuple[ThreatVerdict, str, int]:
-    """Full pipeline: capture -> analyze. Returns (verdict, screenshot_b64, elapsed_ms)."""
+    """Full pipeline: lexical pre-check -> capture -> analyze.
+
+    Returns (verdict, screenshot_b64, elapsed_ms). On a conclusive lexical
+    verdict no screenshot is taken and Gemini is never called.
+    """
     start = time.perf_counter()
+    lex = lexical.check_url(url)
+    if lex is not None:
+        elapsed = int((time.perf_counter() - start) * 1000)
+        return lex, "", elapsed
     png = await capture_screenshot(url)
     verdict = await analyze_screenshot(png, url)
     elapsed = int((time.perf_counter() - start) * 1000)
@@ -164,8 +173,15 @@ async def analyze_url(url: str) -> tuple[ThreatVerdict, str, int]:
 
 
 async def analyze_image(screenshot_b64: str, url: str) -> tuple[ThreatVerdict, int]:
-    """Extension path: analyze an already-captured screenshot."""
+    """Extension path: analyze an already-captured screenshot.
+
+    The lexical pre-check still runs first — conclusive URLs return
+    without spending a Gemini call.
+    """
     start = time.perf_counter()
+    lex = lexical.check_url(url)
+    if lex is not None:
+        return lex, int((time.perf_counter() - start) * 1000)
     png = base64.b64decode(screenshot_b64)
     verdict = await analyze_screenshot(png, url)
     elapsed = int((time.perf_counter() - start) * 1000)

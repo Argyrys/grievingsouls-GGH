@@ -222,6 +222,7 @@
           <dt>URL</dt><dd id="kvUrl">—</dd>
           <dt>Brand targeted</dt><dd id="kvBrand">—</dd>
           <dt>Elapsed</dt><dd id="kvMs">—</dd>
+          <dt>Engine</dt><dd id="kvTier">—</dd>
         </dl>
         <div style="margin-top:14px" id="actionWrap"></div>
       </div>
@@ -331,6 +332,9 @@ function render(data) {
   $('kvUrl').textContent = data.url;
   $('kvBrand').textContent = v.brand_impersonated || 'none';
   $('kvMs').textContent = data.elapsed_ms + ' ms';
+  $('kvTier').textContent = v.tier === 'lexical'
+    ? 'Lexical fast-tier · 0 Gemini calls'
+    : 'Multimodal (Gemini)';
 
   $('actionWrap').innerHTML =
     `<span class="action-pill action-${action}">Recommended: ${action}</span>`;
@@ -343,6 +347,9 @@ function render(data) {
   if (data.screenshot_b64) {
     $('shotBox').outerHTML =
       `<img id="shotBox" class="shot" src="data:image/png;base64,${data.screenshot_b64}" alt="victim view">`;
+  } else {
+    $('shotBox').outerHTML =
+      `<div id="shotBox" class="shot-empty">Lexical fast-tier verdict — no capture needed</div>`;
   }
 }
 
@@ -407,6 +414,9 @@ function renderHistory(json) {
   $('kvUrl').textContent = x.url;
   $('kvBrand').textContent = v.brand_impersonated || 'none';
   $('kvMs').textContent = x.elapsed_ms + ' ms';
+  $('kvTier').textContent = v.tier === 'lexical'
+    ? 'Lexical fast-tier · 0 Gemini calls'
+    : 'Multimodal (Gemini)';
   $('actionWrap').innerHTML = `<span class="action-pill action-${action}">Recommended: ${action}</span>`;
   fillList('visualList', v.visual_signals, 'No visual signals extracted.');
   fillList('urlList', v.url_risk_signals, 'No URL risk signals.');
