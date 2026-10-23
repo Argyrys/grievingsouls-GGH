@@ -51,13 +51,12 @@ Veritas Vision is a three-layer phishing detector:
 **Before the event (pre-event MVP, ≤60%):** FastAPI backend with Playwright screenshot capture and Gemini multimodal verdict pipeline (multi-key quota rotation), dark-cyber dashboard, Chrome MV3 extension, four hand-built mock victim pages (Microsoft canvas-cloaking, Netflix SVG, Chase MFA, legitimate control), `run.bat` launcher.
 
 **Built on the day (23 Oct):**
-- Lexical fast-tier URL engine with auto-fire pre-check (two-stage pipeline; Tier field on every verdict)
+- Lexical fast-tier URL engine with auto-fire pre-check (two-stage pipeline; `tier` field on every verdict)
 - Capture hardening (domcontentloaded + paint-wait fallback for real-world sites)
-- Persistent history and verdict trend on the dashboard
-- Extension auto-scan on page navigation
-- PayPal and GitHub mock victim pages
-- Unit test suite for the lexical tier
-- This README, documentation, and presentation materials
+- Persistent history (file-backed; survives restarts; click-to-replay needs zero quota — demo insurance)
+- PayPal, GitHub, and Swiggy mock victim pages
+- Unit test suite for the lexical tier (offline)
+- Presentation materials: pitch script, demo run-sheet, judge Q&A, presenter handbook
 
 ## Credits
 

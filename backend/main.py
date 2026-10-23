@@ -1,3 +1,4 @@
+import json
 import os
 import uuid
 from datetime import datetime, timezone
@@ -13,6 +14,8 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 app = FastAPI(title="Veritas Vision", version="1.0.0")
 
+# ensure history file loads on import (already done at module level above)
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -22,6 +25,15 @@ app.add_middleware(
 
 _history: list[HistoryEntry] = []
 MAX_HISTORY = 50
+
+HISTORY_FILE = os.path.join(BASE_DIR, "history.json")
+
+if os.path.exists(HISTORY_FILE):
+    try:
+        with open(HISTORY_FILE) as f:
+            _history = [HistoryEntry(**e) for e in json.load(f)]
+    except Exception:
+        _history = []
 
 
 def _record(url: str, verdict: ThreatVerdict, elapsed_ms: int) -> HistoryEntry:
@@ -34,6 +46,11 @@ def _record(url: str, verdict: ThreatVerdict, elapsed_ms: int) -> HistoryEntry:
     )
     _history.insert(0, entry)
     del _history[MAX_HISTORY:]
+    try:
+        with open(HISTORY_FILE, "w") as f:
+            json.dump([h.model_dump() for h in _history], f)
+    except Exception:
+        pass
     return entry
 
 
