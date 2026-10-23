@@ -62,8 +62,31 @@ async def capture_screenshot(url: str) -> bytes:
                 ignore_https_errors=True,
             )
             page = await context.new_page()
-            await page.goto(url, wait_until="networkidle", timeout=20000)
-            await page.wait_for_timeout(1200)
+            nav_ok = True
+            try:
+                await page.goto(url, wait_until="domcontentloaded", timeout=30000)
+            except Exception:
+                nav_ok = False
+            if nav_ok:
+                try:
+                    await page.wait_for_load_state("load", timeout=8000)
+                except Exception:
+                    pass
+                await page.wait_for_timeout(2000)
+            else:
+                # Navigation failed — screenshot whatever rendered, but if the
+                # page is still blank the target is unreachable (DNS/slow net).
+                await page.wait_for_timeout(1500)
+                try:
+                    blank = await page.evaluate(
+                        "document.body ? document.body.innerHTML.trim().length === 0 : true"
+                    )
+                except Exception:
+                    blank = True
+                if blank:
+                    raise RuntimeError(
+                        f"site unreachable or too slow from this network: {url}"
+                    )
             return await page.screenshot(type="png", full_page=False)
         finally:
             await browser.close()
