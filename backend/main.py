@@ -14,8 +14,6 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 app = FastAPI(title="Veritas Vision", version="1.0.0")
 
-# ensure history file loads on import (already done at module level above)
-
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
