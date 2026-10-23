@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Swiggy - Login to your account</title>
+<style>
+  body { margin: 0; font-family: "Segoe UI", Arial, sans-serif; background: #fff7f0; }
+  .topbar { background: #fc8019; color: #fff; padding: 18px 40px; font-size: 22px; font-weight: 700; letter-spacing: 1px; }
+  .card { max-width: 420px; margin: 60px auto; background: #fff; padding: 36px; border-radius: 10px; box-shadow: 0 4px 18px rgba(0,0,0,.08); }
+  h1 { font-size: 24px; color: #1a1a1a; margin: 0 0 6px; }
+  p.sub { color: #555; font-size: 14px; margin: 0 0 24px; }
+  label { display: block; font-size: 13px; color: #333; margin-bottom: 6px; font-weight: 600; }
+  input { width: 100%; box-sizing: border-box; padding: 12px; border: 1px solid #d9cfc5; border-radius: 6px; font-size: 15px; margin-bottom: 18px; }
+  .btn { width: 100%; background: #fc8019; color: #fff; border: 0; padding: 13px; font-size: 16px; font-weight: 600; border-radius: 6px; cursor: pointer; }
+  .note { margin-top: 18px; font-size: 12px; color: #777; }
+  .urgent { background: #fff1e0; border: 1px solid #fc8019; color: #b35408; padding: 10px 12px; border-radius: 6px; font-size: 13px; margin-bottom: 20px; }
+</style>
+</head>
+<body>
+  <div class="topbar">SWIGGY</div>
+  <div class="card">
+    <div class="urgent">Your account will be suspended in 24 hours. Verify your login details now to keep your saved addresses and SuperCoins.</div>
+    <h1>Login to your account</h1>
+    <p class="sub">Enter the mobile number linked to your account</p>
+    <label>Mobile number</label>
+    <input type="text" placeholder="10-digit mobile number" maxlength="10">
+    <label>Password</label>
+    <input type="password" placeholder="Enter your password">
+    <button class="btn">LOGIN &amp; VERIFY</button>
+    <p class="note">Swiggy will never ask for your password by SMS or email. This session expires in 10 minutes.</p>
+  </div>
+</body>
+</html>
