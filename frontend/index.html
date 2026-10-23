@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Veritas Vision — Multimodal Phishing Detector</title>
+<style>
+  :root {
+    --bg: #070b12;
+    --panel: #0d1420;
+    --panel2: #111a29;
+    --border: #1c2a3d;
+    --text: #e6edf5;
+    --muted: #8b9bb0;
+    --cyan: #06b6d4;
+    --pink: #ec4899;
+    --green: #22c55e;
+    --amber: #f59e0b;
+    --red: #ef4444;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: "Segoe UI", system-ui, sans-serif;
+    background: radial-gradient(1200px 600px at 80% -10%, rgba(6,182,212,.12), transparent),
+                radial-gradient(900px 500px at -10% 30%, rgba(236,72,153,.08), transparent),
+                var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+  header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 18px 32px; border-bottom: 1px solid var(--border);
+    background: rgba(13,20,32,.8); backdrop-filter: blur(8px);
+    position: sticky; top: 0; z-index: 10;
+  }
+  .brand { display: flex; align-items: center; gap: 12px; }
+  .logo {
+    width: 34px; height: 34px; border-radius: 8px;
+    background: linear-gradient(135deg, var(--cyan), var(--pink));
+    display: grid; place-items: center; font-weight: 800; color: #041018; font-size: 16px;
+  }
+  .brand h1 { font-size: 18px; letter-spacing: .5px; }
+  .brand h1 span { color: var(--cyan); }
+  .tagline { color: var(--muted); font-size: 12px; }
+  .stats { display: flex; gap: 18px; color: var(--muted); font-size: 12px; }
+  .stats b { color: var(--text); font-size: 14px; display: block; }
+
+  main { max-width: 1200px; margin: 0 auto; padding: 28px 24px 60px; }
+
+  .scanner {
+    background: var(--panel); border: 1px solid var(--border); border-radius: 14px;
+    padding: 22px; display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+  }
+  .scanner input {
+    flex: 1; min-width: 280px; padding: 14px 16px; border-radius: 10px;
+    border: 1px solid var(--border); background: var(--panel2); color: var(--text);
+    font-size: 15px; outline: none;
+  }
+  .scanner input:focus { border-color: var(--cyan); }
+  .btn {
+    padding: 14px 26px; border: 0; border-radius: 10px; font-size: 15px; font-weight: 700;
+    cursor: pointer; background: linear-gradient(135deg, var(--cyan), #0891b2); color: #041018;
+  }
+  .btn:disabled { opacity: .5; cursor: wait; }
+  .btn-ghost {
+    background: transparent; border: 1px solid var(--border); color: var(--muted);
+    padding: 8px 14px; border-radius: 8px; font-size: 12px; cursor: pointer;
+  }
+  .btn-ghost:hover { border-color: var(--cyan); color: var(--text); }
+
+  .demos { margin-top: 12px; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .demos .lbl { color: var(--muted); font-size: 12px; margin-right: 4px; }
+
+  .grid { display: grid; grid-template-columns: 1.4fr 1fr; gap: 18px; margin-top: 22px; }
+  @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
+
+  .card {
+    background: var(--panel); border: 1px solid var(--border); border-radius: 14px; padding: 20px;
+  }
+  .card h3 {
+    font-size: 12px; text-transform: uppercase; letter-spacing: 1.2px;
+    color: var(--muted); margin-bottom: 14px;
+  }
+
+  .verdict-banner {
+    border-radius: 12px; padding: 22px; text-align: center; margin-bottom: 16px;
+    border: 1px solid var(--border); background: var(--panel2);
+  }
+  .verdict-banner.block { background: rgba(239,68,68,.12); border-color: rgba(239,68,68,.5); }
+  .verdict-banner.warn  { background: rgba(245,158,11,.12); border-color: rgba(245,158,11,.5); }
+  .verdict-banner.allow { background: rgba(34,197,94,.10); border-color: rgba(34,197,94,.45); }
+  .verdict-banner.idle  { color: var(--muted); }
+  .v-label { font-size: 34px; font-weight: 800; letter-spacing: 2px; }
+  .block .v-label { color: var(--red); }
+  .warn .v-label { color: var(--amber); }
+  .allow .v-label { color: var(--green); }
+  .v-sub { margin-top: 6px; color: var(--muted); font-size: 14px; }
+
+  .gauge-wrap { display: flex; align-items: center; gap: 16px; margin: 14px 0; }
+  .gauge {
+    flex: 1; height: 12px; background: var(--panel2); border-radius: 99px; overflow: hidden;
+    border: 1px solid var(--border);
+  }
+  .gauge > div { height: 100%; width: 0; border-radius: 99px; transition: width .6s ease; }
+  .gauge-num { font-size: 22px; font-weight: 700; min-width: 64px; text-align: right; }
+
+  .kv { display: grid; grid-template-columns: 130px 1fr; gap: 8px 14px; font-size: 14px; }
+  .kv dt { color: var(--muted); }
+  .kv dd { color: var(--text); word-break: break-all; }
+
+  ul.signals { list-style: none; }
+  ul.signals li {
+    padding: 8px 12px; margin-bottom: 6px; border-radius: 8px;
+    background: var(--panel2); border-left: 3px solid var(--cyan); font-size: 13.5px;
+  }
+  ul.signals.risk li { border-left-color: var(--red); }
+  ul.signals.visual li { border-left-color: var(--pink); }
+
+  .extracted {
+    white-space: pre-wrap; font-family: Consolas, monospace; font-size: 12.5px;
+    background: var(--panel2); border: 1px solid var(--border); border-radius: 10px;
+    padding: 14px; max-height: 220px; overflow: auto; color: #b7c7d9; line-height: 1.55;
+  }
+  .reasoning { font-size: 14px; line-height: 1.65; color: #c8d5e3; }
+  .action-pill {
+    display: inline-block; margin-top: 12px; padding: 7px 16px; border-radius: 99px;
+    font-weight: 700; font-size: 13px; text-transform: uppercase; letter-spacing: 1px;
+  }
+  .action-block { background: rgba(239,68,68,.18); color: var(--red); border: 1px solid rgba(239,68,68,.5); }
+  .action-warn  { background: rgba(245,158,11,.18); color: var(--amber); border: 1px solid rgba(245,158,11,.5); }
+  .action-allow { background: rgba(34,197,94,.18); color: var(--green); border: 1px solid rgba(34,197,94,.5); }
+
+  .shot {
+    width: 100%; border-radius: 10px; border: 1px solid var(--border);
+    background: #000; min-height: 120px; object-fit: contain; max-height: 340px;
+  }
+  .shot-empty { color: var(--muted); font-size: 13px; text-align: center; padding: 40px 0; }
+
+  .loader { display: none; margin-top: 14px; color: var(--cyan); font-size: 13.5px; }
+  .loader.on { display: flex; align-items: center; gap: 10px; }
+  .spin {
+    width: 16px; height: 16px; border: 2px solid rgba(6,182,212,.25);
+    border-top-color: var(--cyan); border-radius: 50%; animation: sp .8s linear infinite;
+  }
+  @keyframes sp { to { transform: rotate(360deg); } }
+
+  .history-item {
+    display: flex; justify-content: space-between; align-items: center; gap: 10px;
+    padding: 10px 12px; border-radius: 8px; background: var(--panel2);
+    border: 1px solid var(--border); margin-bottom: 8px; cursor: pointer; font-size: 13px;
+  }
+  .history-item:hover { border-color: var(--cyan); }
+  .history-item .u { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--muted); }
+  .dot { width: 8px; height: 8px; border-radius: 50%; flex: none; }
+  .dot.block { background: var(--red); }
+  .dot.warn { background: var(--amber); }
+  .dot.allow { background: var(--green); }
+  .badge {
+    font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 99px; flex: none;
+    text-transform: uppercase;
+  }
+  .badge.block { background: rgba(239,68,68,.15); color: var(--red); }
+  .badge.warn { background: rgba(245,158,11,.15); color: var(--amber); }
+  .badge.allow { background: rgba(34,197,94,.15); color: var(--green); }
+
+  .error {
+    margin-top: 14px; padding: 12px 16px; border-radius: 10px; display: none;
+    background: rgba(239,68,68,.12); border: 1px solid rgba(239,68,68,.4);
+    color: #fca5a5; font-size: 13.5px;
+  }
+  .error.on { display: block; }
+  footer { text-align: center; color: var(--muted); font-size: 12px; margin-top: 40px; }
+  footer b { color: var(--cyan); }
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">
+    <div class="logo">VV</div>
+    <div>
+      <h1>VERITAS <span>VISION</span></h1>
+      <div class="tagline">See the truth. Multimodal phishing detection powered by Gemini.</div>
+    </div>
+  </div>
+  <div class="stats">
+    <div><b id="statTotal">0</b>scans</div>
+    <div><b id="statBlocked">0</b>blocked</div>
+    <div><b id="statMs">—</b>avg ms</div>
+  </div>
+</header>
+
+<main>
+  <div class="scanner">
+    <input id="url" type="text" placeholder="Paste a URL — e.g. http://127.0.0.1:8000/mocks/ms-login-canvas.html" autofocus>
+    <button class="btn" id="analyzeBtn" onclick="runAnalyze()">Analyze</button>
+  </div>
+  <div class="demos">
+    <span class="lbl">Demo pages:</span>
+    <button class="btn-ghost" onclick="demo('ms-login-canvas.html')">Canvas Microsoft</button>
+    <button class="btn-ghost" onclick="demo('netflix-svg.html')">Netflix SVG</button>
+    <button class="btn-ghost" onclick="demo('chase-mfa.html')">Chase MFA</button>
+    <button class="btn-ghost" onclick="demo('legit-demo.html')">Legit portal</button>
+  </div>
+  <div class="loader" id="loader"><div class="spin"></div><span id="loaderText">Rendering page in headless Chromium…</span></div>
+  <div class="error" id="error"></div>
+
+  <div class="grid">
+    <div>
+      <div class="card">
+        <div class="verdict-banner idle" id="banner">
+          <div class="v-label" id="vLabel">AWAITING SCAN</div>
+          <div class="v-sub" id="vSub">Enter a URL to render, screenshot, and audit with Gemini.</div>
+        </div>
+        <div class="gauge-wrap">
+          <div style="flex:1">
+            <div style="font-size:12px;color:var(--muted);margin-bottom:6px">CONFIDENCE</div>
+            <div class="gauge"><div id="gaugeBar" style="background:linear-gradient(90deg,var(--cyan),var(--pink))"></div></div>
+          </div>
+          <div class="gauge-num" id="gaugeNum">—</div>
+        </div>
+        <dl class="kv">
+          <dt>URL</dt><dd id="kvUrl">—</dd>
+          <dt>Brand targeted</dt><dd id="kvBrand">—</dd>
+          <dt>Elapsed</dt><dd id="kvMs">—</dd>
+        </dl>
+        <div style="margin-top:14px" id="actionWrap"></div>
+      </div>
+
+      <div class="card" style="margin-top:18px">
+        <h3>Visual identity signals (what Gemini sees)</h3>
+        <ul class="signals visual" id="visualList"><li style="border-left-color:var(--border);color:var(--muted)">—</li></ul>
+      </div>
+
+      <div class="card" style="margin-top:18px">
+        <h3>URL risk signals (what the address says)</h3>
+        <ul class="signals risk" id="urlList"><li style="border-left-color:var(--border);color:var(--muted)">—</li></ul>
+      </div>
+
+      <div class="card" style="margin-top:18px">
+        <h3>Reasoning</h3>
+        <div class="reasoning" id="reasoning">—</div>
+      </div>
+    </div>
+
+    <div>
+      <div class="card">
+        <h3>Victim-view screenshot</h3>
+        <div id="shotBox" class="shot-empty">No screenshot yet</div>
+      </div>
+      <div class="card" style="margin-top:18px">
+        <h3>Extracted on-page text (incl. canvas / SVG)</h3>
+        <div class="extracted" id="extracted">—</div>
+      </div>
+      <div class="card" style="margin-top:18px">
+        <h3>Scan history</h3>
+        <div id="historyList"></div>
+        <button class="btn-ghost" style="margin-top:8px" onclick="clearHistory()">Clear history</button>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    Built with <b>Gemini 3.5 Flash</b> multimodal reasoning · Playwright victim-view rendering ·
+    Google Gemini Hackathon 2026
+  </footer>
+</main>
+
+<script>
+const $ = (id) => document.getElementById(id);
+let busy = false;
+
+function demo(name) {
+  $('url').value = location.origin + '/mocks/' + name;
+  runAnalyze();
+}
+
+async function runAnalyze() {
+  if (busy) return;
+  const url = $('url').value.trim();
+  if (!url) return;
+  busy = true;
+  $('analyzeBtn').disabled = true;
+  $('error').classList.remove('on');
+  $('loader').classList.add('on');
+  $('loaderText').textContent = 'Rendering page in headless Chromium, then asking Gemini to cross-reference visual identity vs URL (retries automatically if Gemini is busy)…';
+  $('banner').className = 'verdict-banner idle';
+  $('vLabel').textContent = 'SCANNING…';
+  $('vSub').textContent = url;
+  try {
+    const res = await fetch('/api/analyze', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || 'Analysis failed');
+    render(data);
+    loadHistory();
+  } catch (e) {
+    $('error').textContent = e.message;
+    $('error').classList.add('on');
+    $('banner').className = 'verdict-banner idle';
+    $('vLabel').textContent = 'SCAN FAILED';
+    $('vSub').textContent = 'Check the backend logs.';
+  } finally {
+    busy = false;
+    $('analyzeBtn').disabled = false;
+    $('loader').classList.remove('on');
+  }
+}
+
+function render(data) {
+  const v = data.verdict;
+  const action = v.recommended_action || (v.is_phishing ? 'block' : 'allow');
+  $('banner').className = 'verdict-banner ' + action;
+  $('vLabel').textContent =
+    action === 'block' ? 'PHISHING DETECTED' :
+    action === 'warn' ? 'SUSPICIOUS' : 'SAFE';
+  $('vSub').textContent = v.is_phishing && v.brand_impersonated
+    ? `Impersonating ${v.brand_impersonated}`
+    : (v.brand_impersonated ? 'Brand reference present, host context acceptable' : 'No brand impersonation detected');
+
+  const conf = Math.round((v.confidence_score || 0) * 100);
+  $('gaugeBar').style.width = conf + '%';
+  $('gaugeBar').style.background =
+    action === 'block' ? 'linear-gradient(90deg,#f59e0b,#ef4444)' :
+    action === 'warn' ? 'linear-gradient(90deg,#f59e0b,#fbbf24)' :
+    'linear-gradient(90deg,#06b6d4,#22c55e)';
+  $('gaugeNum').textContent = conf + '%';
+
+  $('kvUrl').textContent = data.url;
+  $('kvBrand').textContent = v.brand_impersonated || 'none';
+  $('kvMs').textContent = data.elapsed_ms + ' ms';
+
+  $('actionWrap').innerHTML =
+    `<span class="action-pill action-${action}">Recommended: ${action}</span>`;
+
+  fillList('visualList', v.visual_signals, 'No visual signals extracted.');
+  fillList('urlList', v.url_risk_signals, 'No URL risk signals.');
+  $('reasoning').textContent = v.reasoning || '—';
+  $('extracted').textContent = v.extracted_text || '—';
+
+  if (data.screenshot_b64) {
+    $('shotBox').outerHTML =
+      `<img id="shotBox" class="shot" src="data:image/png;base64,${data.screenshot_b64}" alt="victim view">`;
+  }
+}
+
+function fillList(id, items, empty) {
+  const el = $(id);
+  if (!items || !items.length) {
+    el.innerHTML = `<li style="border-left-color:var(--border);color:var(--muted)">${empty}</li>`;
+    return;
+  }
+  el.innerHTML = items.map((s) => `<li>${esc(s)}</li>`).join('');
+}
+
+function esc(s) {
+  return String(s).replace(/[&<>"']/g, (c) =>
+    ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+async function loadHistory() {
+  const res = await fetch('/api/history');
+  const data = await res.json();
+  const h = data.history || [];
+  $('statTotal').textContent = h.length;
+  $('statBlocked').textContent = h.filter((x) => x.verdict.is_phishing).length;
+  const avg = h.length ? Math.round(h.reduce((a, x) => a + x.elapsed_ms, 0) / h.length) : '—';
+  $('statMs').textContent = avg;
+  $('historyList').innerHTML = h.length
+    ? h.slice(0, 12).map((x) => {
+        const a = x.verdict.recommended_action || (x.verdict.is_phishing ? 'block' : 'allow');
+        const name = x.url.split(/[/?#]/).filter(Boolean).pop() || x.url;
+        return `<div class="history-item" title="${esc(x.url)}" onclick='renderHistory(${JSON.stringify(JSON.stringify(x)).replace(/'/g, "&#39;")})'>
+          <span class="dot ${a}"></span>
+          <span class="u">${esc(name)}</span>
+          <span class="badge ${a}">${a}</span>
+        </div>`;
+      }).join('')
+    : '<div style="color:var(--muted);font-size:13px">No scans yet.</div>';
+}
+
+async function clearHistory() {
+  await fetch('/api/history/clear', { method: 'POST' });
+  loadHistory();
+}
+
+function renderHistory(json) {
+  const x = JSON.parse(json);
+  const v = x.verdict;
+  const action = v.recommended_action || (v.is_phishing ? 'block' : 'allow');
+  $('banner').className = 'verdict-banner ' + action;
+  $('vLabel').textContent =
+    action === 'block' ? 'PHISHING DETECTED' :
+    action === 'warn' ? 'SUSPICIOUS' : 'SAFE';
+  $('vSub').textContent = v.is_phishing && v.brand_impersonated
+    ? `Impersonating ${v.brand_impersonated}`
+    : (v.brand_impersonated ? 'Brand reference present, host context acceptable' : 'No brand impersonation detected');
+  const conf = Math.round((v.confidence_score || 0) * 100);
+  $('gaugeBar').style.width = conf + '%';
+  $('gaugeBar').style.background =
+    action === 'block' ? 'linear-gradient(90deg,#f59e0b,#ef4444)' :
+    action === 'warn' ? 'linear-gradient(90deg,#f59e0b,#fbbf24)' :
+    'linear-gradient(90deg,#06b6d4,#22c55e)';
+  $('gaugeNum').textContent = conf + '%';
+  $('kvUrl').textContent = x.url;
+  $('kvBrand').textContent = v.brand_impersonated || 'none';
+  $('kvMs').textContent = x.elapsed_ms + ' ms';
+  $('actionWrap').innerHTML = `<span class="action-pill action-${action}">Recommended: ${action}</span>`;
+  fillList('visualList', v.visual_signals, 'No visual signals extracted.');
+  fillList('urlList', v.url_risk_signals, 'No URL risk signals.');
+  $('reasoning').textContent = v.reasoning || '—';
+  $('extracted').textContent = v.extracted_text || '—';
+  const shot = document.getElementById('shotBox');
+  if (shot && shot.tagName === 'IMG') {
+    shot.outerHTML = `<div id="shotBox" class="shot-empty">Screenshot not stored in history — re-scan to capture</div>`;
+  }
+}
+
+document.getElementById('url').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') runAnalyze();
+});
+loadHistory();
+</script>
+</body>
+</html>

